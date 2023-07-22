@@ -1,4 +1,6 @@
-﻿// ----------------------------
+﻿import { CN_SetCookie, CN_GetCookie } from './cookie-utils';
+
+// ----------------------------
 // SETTINGS (FEEL FREE TO EDIT)
 // ----------------------------
 // These are the default settings. Since v1.3, a 'settings' menu allows to change most of the below values in the UI
@@ -1396,29 +1398,6 @@ function CN_RemovePunctuation(str) {
 	const regexPonctuation = /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-./:;<=>?@\[\]^_`{|}~]/g;
 	str = str.replace(regexPonctuation, '')+"";
 	return str.toLowerCase().trim();
-}
-
-// Sets a cookie
-function CN_SetCookie(name, value) {
-	var days = 365;
-	var date = new Date();
-	date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-	var expires = "; expires=" + date.toGMTString();
-	document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
-}
-
-// Reads a cookie
-function CN_GetCookie(name) {
-	var nameEQ = encodeURIComponent(name) + "=";
-	var ca = document.cookie.split(';');
-	for (var i = 0; i < ca.length; i++) {
-		var c = ca[i];
-		while (c.charAt(0) === ' ')
-			c = c.substring(1, c.length);
-		if (c.indexOf(nameEQ) === 0)
-			return decodeURIComponent(c.substring(nameEQ.length, c.length));
-	}
-	return null;
 }
 
 // Refresh ElevenLabs voice list using current API key

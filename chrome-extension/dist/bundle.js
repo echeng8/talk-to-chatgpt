@@ -1,16 +1,78 @@
 /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./chrome-extension/src/cookie-utils.ts":
+/*!**********************************************!*\
+  !*** ./chrome-extension/src/cookie-utils.ts ***!
+  \**********************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CN_GetCookie = exports.CN_SetCookie = void 0;
+function CN_SetCookie(name, value) {
+    var days = 365;
+    var date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    var expires = "; expires=" + date.toGMTString();
+    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+}
+exports.CN_SetCookie = CN_SetCookie;
+function CN_GetCookie(name) {
+    var nameEQ = encodeURIComponent(name) + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ')
+            c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0)
+            return decodeURIComponent(c.substring(nameEQ.length, c.length));
+    }
+    return null;
+}
+exports.CN_GetCookie = CN_GetCookie;
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
 var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+var exports = __webpack_exports__;
 /*!***************************************!*\
   !*** ./chrome-extension/src/index.ts ***!
   \***************************************/
-// TALK TO CHATGPT
-// ---------------
-// Author		: C. NEDELCU
-// Version		: 2.6.2
-// Git repo 	: https://github.com/C-Nedelcu/talk-to-chatgpt
-// Chat GPT URL	: https://chat.openai.com/chat
-// How to use   : https://www.youtube.com/watch?v=VXkLQMEs3lA
-// Credits		: C. NEDELCU (code), pixelsoda (GUI), S. James (GUI)
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const cookie_utils_1 = __webpack_require__(/*! ./cookie-utils */ "./chrome-extension/src/cookie-utils.ts");
 // ----------------------------
 // SETTINGS (FEEL FREE TO EDIT)
 // ----------------------------
@@ -1179,7 +1241,7 @@ function CN_SaveSettings() {
             CN_TTS_ELEVENLABS_STABILITY,
             CN_TTS_ELEVENLABS_SIMILARITY
         ];
-        CN_SetCookie("CN_TTGPT", JSON.stringify(settings));
+        (0, cookie_utils_1.CN_SetCookie)("CN_TTGPT", JSON.stringify(settings));
     }
     catch (e) {
         alert('Invalid settings values. ' + e.toString());
@@ -1193,7 +1255,7 @@ function CN_SaveSettings() {
 }
 // Restore settings from cookie
 function CN_RestoreSettings() {
-    var settingsRaw = CN_GetCookie("CN_TTGPT");
+    var settingsRaw = (0, cookie_utils_1.CN_GetCookie)("CN_TTGPT");
     try {
         var settings = JSON.parse(settingsRaw);
         if (typeof settings == "object" && settings != null) {
@@ -1242,27 +1304,6 @@ function CN_RemovePunctuation(str) {
     const regexPonctuation = /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-./:;<=>?@\[\]^_`{|}~]/g;
     str = str.replace(regexPonctuation, '') + "";
     return str.toLowerCase().trim();
-}
-// Sets a cookie
-function CN_SetCookie(name, value) {
-    var days = 365;
-    var date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    var expires = "; expires=" + date.toGMTString();
-    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
-}
-// Reads a cookie
-function CN_GetCookie(name) {
-    var nameEQ = encodeURIComponent(name) + "=";
-    var ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) === ' ')
-            c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0)
-            return decodeURIComponent(c.substring(nameEQ.length, c.length));
-    }
-    return null;
 }
 // Refresh ElevenLabs voice list using current API key
 function CN_RefreshElevenLabsVoiceList(useKeyFromTextField) {
@@ -1436,6 +1477,8 @@ var CN_SPEECHREC_LANGS = [['Afrikaans', ['af-ZA']],
     ['日本語', ['ja-JP']],
     ['हिन्दी', ['hi-IN']],
     ['ภาษาไทย', ['th-TH']]];
+
+})();
 
 /******/ })()
 ;
