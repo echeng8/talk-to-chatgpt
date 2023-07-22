@@ -1,5 +1,5 @@
 module.exports = {
-    entry: './chrome-extension/content.ts',
+    entry: './chrome-extension/src/index.ts',
     output: {
       filename: 'bundle.js',
       path: __dirname + '/chrome-extension/dist'
