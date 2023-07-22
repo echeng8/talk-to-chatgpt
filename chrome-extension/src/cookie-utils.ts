@@ -1,3 +1,5 @@
+// @TODO use modern cookies library 
+
 export function CN_SetCookie(name: string, value: string) : void { 
 	var days = 365;
 	var date = new Date();

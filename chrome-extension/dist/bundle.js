@@ -9,6 +9,7 @@
 /***/ ((__unused_webpack_module, exports) => {
 
 
+// @TODO use modern cookies library 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CN_GetCookie = exports.CN_SetCookie = void 0;
 function CN_SetCookie(name, value) {
@@ -32,6 +33,127 @@ function CN_GetCookie(name) {
     return null;
 }
 exports.CN_GetCookie = CN_GetCookie;
+
+
+/***/ }),
+
+/***/ "./chrome-extension/src/settings.ts":
+/*!******************************************!*\
+  !*** ./chrome-extension/src/settings.ts ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CN_RestoreSettings = exports.CN_SaveSettings = void 0;
+// all settings logic 
+const cookie_utils_1 = __webpack_require__(/*! ./cookie-utils */ "./chrome-extension/src/cookie-utils.ts");
+// Save settings and close dialog box
+function CN_SaveSettings() {
+    // Save settings
+    try {
+        // AI voice settings: voice/language, rate, pitch
+        var wantedVoiceIndex = jQuery("#TTGPTVoice").val();
+        var allVoices = speechSynthesis.getVoices();
+        CN_WANTED_VOICE = allVoices[wantedVoiceIndex];
+        CN_WANTED_VOICE_NAME = CN_WANTED_VOICE ? CN_WANTED_VOICE.lang + "-" + CN_WANTED_VOICE.name : "";
+        CN_TEXT_TO_SPEECH_RATE = Number(jQuery("#TTGPTRate").val());
+        CN_TEXT_TO_SPEECH_PITCH = Number(jQuery("#TTGPTPitch").val());
+        // Speech recognition settings: language, stop, pause
+        CN_WANTED_LANGUAGE_SPEECH_REC = jQuery("#TTGPTRecLang").val();
+        CN_SAY_THIS_WORD_TO_STOP = CN_RemovePunctuation(jQuery("#TTGPTStopWord").val());
+        CN_SAY_THIS_WORD_TO_PAUSE = CN_RemovePunctuation(jQuery("#TTGPTPauseWord").val());
+        CN_KEEP_LISTENING = jQuery("#TTGPTKeepListening").prop("checked");
+        CN_AUTO_SEND_AFTER_SPEAKING = jQuery("#TTGPTAutosend").prop("checked");
+        CN_SAY_THIS_TO_SEND = CN_RemovePunctuation(jQuery("#TTGPTSendWord").val());
+        CN_IGNORE_COMMAS = jQuery("#TTGPTIgnoreCommas").prop("checked");
+        CN_IGNORE_CODE_BLOCKS = jQuery("#TTGPTIgnoreCode").prop("checked");
+        // ElevenLabs
+        CN_TTS_ELEVENLABS = jQuery("#TTGPTElevenLabs").prop("checked");
+        CN_TTS_ELEVENLABS_APIKEY = CN_RemovePunctuation(jQuery("#TTGPTElevenLabsKey").val() + "");
+        CN_TTS_ELEVENLABS_VOICE = jQuery("#TTGPTElevenLabsVoice").val() + "";
+        CN_TTS_ELEVENLABS_STABILITY = jQuery("#TTGPTElevenLabsStability").val();
+        CN_TTS_ELEVENLABS_SIMILARITY = jQuery("#TTGPTElevenLabsSimilarity").val();
+        // If ElevenLabs is active, and that there is no voice, error out
+        if (CN_TTS_ELEVENLABS && !CN_TTS_ELEVENLABS_VOICE) {
+            alert("To enable ElevenLabs support, you must select a voice in the dropdown list. Click the Refresh List button. If no voice appears in the list, check your API key. If you are 100% sure your API key is valid, please report the issue on the Github project page, on the Issues tab.");
+            return;
+        }
+        // Apply language to speech recognition instance
+        if (CN_SPEECHREC)
+            CN_SPEECHREC.lang = CN_WANTED_LANGUAGE_SPEECH_REC;
+        // Save settings in cookie
+        var settings = [
+            CN_WANTED_VOICE_NAME,
+            CN_TEXT_TO_SPEECH_RATE,
+            CN_TEXT_TO_SPEECH_PITCH,
+            CN_WANTED_LANGUAGE_SPEECH_REC,
+            CN_SAY_THIS_WORD_TO_STOP,
+            CN_SAY_THIS_WORD_TO_PAUSE,
+            CN_AUTO_SEND_AFTER_SPEAKING ? 1 : 0,
+            CN_SAY_THIS_TO_SEND,
+            CN_IGNORE_COMMAS ? 1 : 0,
+            CN_KEEP_LISTENING ? 1 : 0,
+            CN_IGNORE_CODE_BLOCKS ? 1 : 0,
+            CN_TTS_ELEVENLABS ? 1 : 0,
+            CN_TTS_ELEVENLABS_APIKEY,
+            CN_TTS_ELEVENLABS_VOICE,
+            CN_TTS_ELEVENLABS_STABILITY,
+            CN_TTS_ELEVENLABS_SIMILARITY
+        ];
+        (0, cookie_utils_1.CN_SetCookie)("CN_TTGPT", JSON.stringify(settings));
+    }
+    catch (e) {
+        alert('Invalid settings values. ' + e.toString());
+        return;
+    }
+    // Close dialog
+    console.log("Closing settings dialog");
+    jQuery("#TTGPTSettingsArea").remove();
+    // Resume listening
+    CN_PAUSED = false;
+}
+exports.CN_SaveSettings = CN_SaveSettings;
+// Restore settings from cookie
+function CN_RestoreSettings() {
+    var settingsRaw = (0, cookie_utils_1.CN_GetCookie)("CN_TTGPT");
+    try {
+        var settings = JSON.parse(settingsRaw);
+        if (typeof settings == "object" && settings != null) {
+            console.log("Reloading settings from cookie: " + settings);
+            CN_WANTED_VOICE_NAME = settings[0];
+            CN_TEXT_TO_SPEECH_RATE = settings[1];
+            CN_TEXT_TO_SPEECH_PITCH = settings[2];
+            CN_WANTED_LANGUAGE_SPEECH_REC = settings[3];
+            CN_SAY_THIS_WORD_TO_STOP = settings[4];
+            CN_SAY_THIS_WORD_TO_PAUSE = settings[5];
+            if (settings.hasOwnProperty(6))
+                CN_AUTO_SEND_AFTER_SPEAKING = settings[6] == 1;
+            if (settings.hasOwnProperty(7))
+                CN_SAY_THIS_TO_SEND = settings[7];
+            if (settings.hasOwnProperty(8))
+                CN_IGNORE_COMMAS = settings[8] == 1;
+            if (settings.hasOwnProperty(9))
+                CN_KEEP_LISTENING = settings[9] == 1;
+            if (settings.hasOwnProperty(10))
+                CN_IGNORE_CODE_BLOCKS = settings[10] == 1;
+            if (settings.hasOwnProperty(11))
+                CN_TTS_ELEVENLABS = settings[11] == 1;
+            if (settings.hasOwnProperty(12))
+                CN_TTS_ELEVENLABS_APIKEY = settings[12];
+            if (settings.hasOwnProperty(13))
+                CN_TTS_ELEVENLABS_VOICE = settings[13];
+            if (settings.hasOwnProperty(14))
+                CN_TTS_ELEVENLABS_STABILITY = settings[14];
+            if (settings.hasOwnProperty(15))
+                CN_TTS_ELEVENLABS_SIMILARITY = settings[15];
+        }
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+}
+exports.CN_RestoreSettings = CN_RestoreSettings;
 
 
 /***/ })
@@ -72,7 +194,7 @@ var exports = __webpack_exports__;
   \***************************************/
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const cookie_utils_1 = __webpack_require__(/*! ./cookie-utils */ "./chrome-extension/src/cookie-utils.ts");
+const settings_1 = __webpack_require__(/*! ./settings */ "./chrome-extension/src/settings.ts");
 // ----------------------------
 // SETTINGS (FEEL FREE TO EDIT)
 // ----------------------------
@@ -884,7 +1006,7 @@ function CN_InitScript() {
         warning = "\n\nWARNING: speech recognition (speech-to-text) is only available in Chromium-based browsers - desktop version at the moment. If you are using another browser, you will not be able to dictate text, but you can still listen to the bot's responses.";
     }
     // Restore settings
-    CN_RestoreSettings();
+    (0, settings_1.CN_RestoreSettings)();
     // Wait on voices to be loaded before fetching list
     window.speechSynthesis.onvoiceschanged = function () {
         if (!CN_WANTED_VOICE_NAME) {
@@ -1154,7 +1276,7 @@ function CN_OnSettingsIconClick() {
         "<div style='width: 600px; margin-left: auto; margin-right: auto; overflow-y: auto;'><h1>⚙️ Talk-to-ChatGPT settings</h1>" + desc + rows + donations + "</div></div>");
     // Assign events
     setTimeout(function () {
-        jQuery(".TTGPTSave").on("click", CN_SaveSettings);
+        jQuery(".TTGPTSave").on("click", settings_1.CN_SaveSettings);
         jQuery(".TTGPTCancel").on("click", CN_CloseSettingsDialog);
         // Is ElevenLabs enabled? toggle visibility, refresh voice list
         if (CN_TTS_ELEVENLABS) {
@@ -1187,110 +1309,6 @@ function CN_OnSettingsIconClick() {
             CN_RefreshElevenLabsVoiceList(true);
         });
     }, 100);
-}
-// Save settings and close dialog box
-function CN_SaveSettings() {
-    // Save settings
-    try {
-        // AI voice settings: voice/language, rate, pitch
-        var wantedVoiceIndex = jQuery("#TTGPTVoice").val();
-        var allVoices = speechSynthesis.getVoices();
-        CN_WANTED_VOICE = allVoices[wantedVoiceIndex];
-        CN_WANTED_VOICE_NAME = CN_WANTED_VOICE ? CN_WANTED_VOICE.lang + "-" + CN_WANTED_VOICE.name : "";
-        CN_TEXT_TO_SPEECH_RATE = Number(jQuery("#TTGPTRate").val());
-        CN_TEXT_TO_SPEECH_PITCH = Number(jQuery("#TTGPTPitch").val());
-        // Speech recognition settings: language, stop, pause
-        CN_WANTED_LANGUAGE_SPEECH_REC = jQuery("#TTGPTRecLang").val();
-        CN_SAY_THIS_WORD_TO_STOP = CN_RemovePunctuation(jQuery("#TTGPTStopWord").val());
-        CN_SAY_THIS_WORD_TO_PAUSE = CN_RemovePunctuation(jQuery("#TTGPTPauseWord").val());
-        CN_KEEP_LISTENING = jQuery("#TTGPTKeepListening").prop("checked");
-        CN_AUTO_SEND_AFTER_SPEAKING = jQuery("#TTGPTAutosend").prop("checked");
-        CN_SAY_THIS_TO_SEND = CN_RemovePunctuation(jQuery("#TTGPTSendWord").val());
-        CN_IGNORE_COMMAS = jQuery("#TTGPTIgnoreCommas").prop("checked");
-        CN_IGNORE_CODE_BLOCKS = jQuery("#TTGPTIgnoreCode").prop("checked");
-        // ElevenLabs
-        CN_TTS_ELEVENLABS = jQuery("#TTGPTElevenLabs").prop("checked");
-        CN_TTS_ELEVENLABS_APIKEY = CN_RemovePunctuation(jQuery("#TTGPTElevenLabsKey").val() + "");
-        CN_TTS_ELEVENLABS_VOICE = jQuery("#TTGPTElevenLabsVoice").val() + "";
-        CN_TTS_ELEVENLABS_STABILITY = jQuery("#TTGPTElevenLabsStability").val();
-        CN_TTS_ELEVENLABS_SIMILARITY = jQuery("#TTGPTElevenLabsSimilarity").val();
-        // If ElevenLabs is active, and that there is no voice, error out
-        if (CN_TTS_ELEVENLABS && !CN_TTS_ELEVENLABS_VOICE) {
-            alert("To enable ElevenLabs support, you must select a voice in the dropdown list. Click the Refresh List button. If no voice appears in the list, check your API key. If you are 100% sure your API key is valid, please report the issue on the Github project page, on the Issues tab.");
-            return;
-        }
-        // Apply language to speech recognition instance
-        if (CN_SPEECHREC)
-            CN_SPEECHREC.lang = CN_WANTED_LANGUAGE_SPEECH_REC;
-        // Save settings in cookie
-        var settings = [
-            CN_WANTED_VOICE_NAME,
-            CN_TEXT_TO_SPEECH_RATE,
-            CN_TEXT_TO_SPEECH_PITCH,
-            CN_WANTED_LANGUAGE_SPEECH_REC,
-            CN_SAY_THIS_WORD_TO_STOP,
-            CN_SAY_THIS_WORD_TO_PAUSE,
-            CN_AUTO_SEND_AFTER_SPEAKING ? 1 : 0,
-            CN_SAY_THIS_TO_SEND,
-            CN_IGNORE_COMMAS ? 1 : 0,
-            CN_KEEP_LISTENING ? 1 : 0,
-            CN_IGNORE_CODE_BLOCKS ? 1 : 0,
-            CN_TTS_ELEVENLABS ? 1 : 0,
-            CN_TTS_ELEVENLABS_APIKEY,
-            CN_TTS_ELEVENLABS_VOICE,
-            CN_TTS_ELEVENLABS_STABILITY,
-            CN_TTS_ELEVENLABS_SIMILARITY
-        ];
-        (0, cookie_utils_1.CN_SetCookie)("CN_TTGPT", JSON.stringify(settings));
-    }
-    catch (e) {
-        alert('Invalid settings values. ' + e.toString());
-        return;
-    }
-    // Close dialog
-    console.log("Closing settings dialog");
-    jQuery("#TTGPTSettingsArea").remove();
-    // Resume listening
-    CN_PAUSED = false;
-}
-// Restore settings from cookie
-function CN_RestoreSettings() {
-    var settingsRaw = (0, cookie_utils_1.CN_GetCookie)("CN_TTGPT");
-    try {
-        var settings = JSON.parse(settingsRaw);
-        if (typeof settings == "object" && settings != null) {
-            console.log("Reloading settings from cookie: " + settings);
-            CN_WANTED_VOICE_NAME = settings[0];
-            CN_TEXT_TO_SPEECH_RATE = settings[1];
-            CN_TEXT_TO_SPEECH_PITCH = settings[2];
-            CN_WANTED_LANGUAGE_SPEECH_REC = settings[3];
-            CN_SAY_THIS_WORD_TO_STOP = settings[4];
-            CN_SAY_THIS_WORD_TO_PAUSE = settings[5];
-            if (settings.hasOwnProperty(6))
-                CN_AUTO_SEND_AFTER_SPEAKING = settings[6] == 1;
-            if (settings.hasOwnProperty(7))
-                CN_SAY_THIS_TO_SEND = settings[7];
-            if (settings.hasOwnProperty(8))
-                CN_IGNORE_COMMAS = settings[8] == 1;
-            if (settings.hasOwnProperty(9))
-                CN_KEEP_LISTENING = settings[9] == 1;
-            if (settings.hasOwnProperty(10))
-                CN_IGNORE_CODE_BLOCKS = settings[10] == 1;
-            if (settings.hasOwnProperty(11))
-                CN_TTS_ELEVENLABS = settings[11] == 1;
-            if (settings.hasOwnProperty(12))
-                CN_TTS_ELEVENLABS_APIKEY = settings[12];
-            if (settings.hasOwnProperty(13))
-                CN_TTS_ELEVENLABS_VOICE = settings[13];
-            if (settings.hasOwnProperty(14))
-                CN_TTS_ELEVENLABS_STABILITY = settings[14];
-            if (settings.hasOwnProperty(15))
-                CN_TTS_ELEVENLABS_SIMILARITY = settings[15];
-        }
-    }
-    catch (ex) {
-        console.error(ex);
-    }
 }
 // Close dialog: remove area altogether
 function CN_CloseSettingsDialog() {
