@@ -549,6 +549,7 @@ function CN_SendMessage(text) {
 
 // Flash the red bar
 function CN_FlashRedBar() {
+	
 	clearTimeout(CN_TIMEOUT_FLASHBAR);
 	
 	// Conversation no longer suspended?
@@ -973,7 +974,7 @@ function CN_InitScript() {
 			"<div style='padding: 4px 40px; border-bottom: 1px solid grey;'>" +
 				"<a href='https://github.com/C-Nedelcu/talk-to-chatgpt' " +
 					"style='display: inline-block; font-size: 20px; line-height: 80%; padding: 8px 0;' " +
-					"target=_blank title='Visit project website'>TALK-TO-ChatGPT<br />" +
+					"target=_blank title='Visit project website'>js<br />" +
 					"<div style='text-align: right; font-size: 12px; color: grey'>V2.6.2</div>" +
 				"</a>" +
 			"</div>" +
@@ -983,7 +984,7 @@ function CN_InitScript() {
 				
 				// Start button
 				"<div style='font-size: 16px; padding: 8px;' class='CNStartZone'>" +
-					"<button style='border: 2px solid grey; padding: 6px 40px; margin: 6px; border-radius: 6px; opacity: 0.7;' id='CNStartButton' title='ALT+SHIFT+S'><i class=\"fa-solid fa-play\"></i>&nbsp;&nbsp;START</button>"+
+					"<button style='border: 2px solid grey; padding: 6px 40px; margin: 6px; border-radius: 6px; opacity: 0.7;' id='CNStartButton' title='ALT+SHIFT+S'><i class=\"fa-solid fa-play\"></i>&nbsp;&nbsp;GO</button>"+
 				"</div>"+
 		
 				// Action buttons
